@@ -35,42 +35,23 @@ auto main(int argc, char* argv[]) -> int
 
 TEST_CASE("Loading a .wav file")
 {
-    auto const data = Cool::AudioData{exe_path::dir() / "../tests/res/10-1000-10000-20000.wav"};
+    auto player = RtAudioW::Player{};
+    Cool::load_audio_file(player, exe_path::dir() / "../tests/res/10-1000-10000-20000.wav");
 
-    CHECK(data.channels_count() == 1);
-    CHECK(data.sample_rate() == 41000);
-    CHECK(data.samples().size() == 164000);
+    CHECK(player.channels_count() == 1);
+    CHECK(player.sample_rate() == 41000);
+    CHECK(player.samples().size() == 164000);
 }
 
-// TEST_CASE("libnyquist test : Opening a .mp3 file in a struct, testing the Left channel signal values")
-// {
-//     std::shared_ptr<nqr::AudioData> audioData = std::make_shared<nqr::AudioData>();
-//     nqr::NyquistIO                  io;
-//     io.Load(audioData.get(), (Cool::Path::root() / "tests/res/audio/Monteverdi - L'Orfeo, Toccata.mp3").string());
-//     std::ifstream                in(Cool::Path::root() / "tests/res/audio/Orfeo.values.left");
-//     std::istream_iterator<float> start(in), end;
-//     std::vector<float>           leftChan(start, end);
+TEST_CASE("Loading a .mp3 file")
+{
+    auto player = RtAudioW::Player{};
+    Cool::load_audio_file(player, exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
 
-//     for (size_t i = 0; i < audioData->sampleRate * 10; i++)
-//     {
-//         CHECK(audioData->samples[i * 2] == doctest::Approx(leftChan[i]));
-//     }
-// }
-
-// TEST_CASE("libnyquist test : Opening a .mp3 file in a struct, testing the Right channel signal values")
-// {
-//     std::shared_ptr<nqr::AudioData> audioData = std::make_shared<nqr::AudioData>();
-//     nqr::NyquistIO                  io;
-//     io.Load(audioData.get(), (Cool::Path::root() / "tests/res/audio/Monteverdi - L'Orfeo, Toccata.mp3").string());
-//     std::ifstream                in(Cool::Path::root() / "tests/res/audio/Orfeo.values.right");
-//     std::istream_iterator<float> start(in), end;
-//     std::vector<float>           rightChan(start, end);
-
-//     for (size_t i = 0; i < audioData->sampleRate * 10; i++)
-//     {
-//         CHECK(audioData->samples[i * 2 + 1] == doctest::Approx(rightChan[i]));
-//     }
-// }
+    CHECK(player.channels_count() == 2);
+    CHECK(player.sample_rate() == 44100);
+    CHECK(player.samples().size() == 9819648);
+}
 
 // TEST_CASE("dj_fft test : Opening a .wav file, reading its content in a struct, computing the FFT on it")
 // {
@@ -122,33 +103,30 @@ TEST_CASE("Loading a .wav file")
 
 // TEST_CASE("RtAudioW test")
 // {
-//     std::shared_ptr<nqr::AudioData> file = std::make_shared<nqr::AudioData>();
-//     nqr::NyquistIO                  io;
-//     io.Load(file.get(), (Cool::Path::root() / "tests/res/audio/Monteverdi - L'Orfeo, Toccata.mp3").string());
+//     auto player = RtAudioW::Player{};
+//     Cool::load_audio_file(player, exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
 
-//     RtAudioW::Player audio;
-//     audio.open(file->samples);
-//     audio.play();
+//     player.play();
 
 //     std::cout << "Started playing\n";
-//     while (audio.get_cursor() < audio.get_data_length() - 44100)
+//     while (player.get_cursor() < player.get_data_length() - 44100)
 //     {
-//         if (audio.get_cursor() > 441000 && audio.get_cursor() < 450000)
+//         if (player.get_cursor() > 441000 && player.get_cursor() < 450000)
 //         {
-//             audio.seek(1323000 / (2 * 44100.f));
-//             std::cout << "Seeking to : " << audio.get_cursor() << "\n";
+//             player.seek(1323000 / (2 * 44100.f));
+//             std::cout << "Seeking to : " << player.get_cursor() << "\n";
 //         }
-//         if (audio.get_cursor() > 2734200 && audio.get_cursor() < 2744200)
+//         if (player.get_cursor() > 2734200 && player.get_cursor() < 2744200)
 //         {
-//             audio.seek(3528000 / (2 * 44100.f));
-//             std::cout << "Seeking to : " << audio.get_cursor() << "\n";
+//             player.seek(3528000 / (2 * 44100.f));
+//             std::cout << "Seeking to : " << player.get_cursor() << "\n";
 //         }
-//         if (audio.get_cursor() > 5292000 && audio.get_cursor() < 5303000)
+//         if (player.get_cursor() > 5292000 && player.get_cursor() < 5303000)
 //         {
-//             audio.seek(7938000 / (2 * 44100.f));
-//             std::cout << "Seeking to : " << audio.get_cursor() << "\n";
+//             player.seek(7938000 / (2 * 44100.f));
+//             std::cout << "Seeking to : " << player.get_cursor() << "\n";
 //         }
 //     }
-//     audio.pause();
-//     audio.close();
+//     player.pause();
+//     player.close();
 // }

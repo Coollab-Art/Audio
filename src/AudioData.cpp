@@ -4,14 +4,33 @@
 
 namespace Cool {
 
-AudioData::AudioData(std::filesystem::path const& path)
+void load_audio_file(RtAudioW::Player& player, std::filesystem::path const& path)
 {
     nqr::NyquistIO io;
     nqr::AudioData data;
     io.Load(&data, path.string());
-    _samples        = std::move(data.samples);
-    _channels_count = std::move(data.channelCount); // NOLINT(*-move-const-arg)
-    _sample_rate    = std::move(data.sampleRate);   // NOLINT(*-move-const-arg)
+    player.open(
+        std::move(data.samples),
+        static_cast<unsigned int>(data.sampleRate),
+        static_cast<unsigned int>(data.channelCount)
+    );
 }
+
+// AudioData::AudioData(std::filesystem::path const& path)
+// {
+//     nqr::NyquistIO io;
+//     nqr::AudioData data;
+//     io.Load(&data, path.string());
+//     _player.open(
+//         std::move(data.samples),
+//         static_cast<unsigned int>(data.sampleRate),
+//         static_cast<unsigned int>(data.channelCount)
+//     );
+// }
+
+// void AudioData::play()
+// {
+//     _player.play();
+// }
 
 } // namespace Cool
