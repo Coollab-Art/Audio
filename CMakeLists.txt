@@ -31,3 +31,16 @@ if(WARNINGS_AS_ERRORS_FOR_AUDIO)
         target_compile_options(Audio PRIVATE -Werror)
     endif()
 endif()
+
+# ---Add libnyquist---
+add_subdirectory(lib/libnyquist)
+target_link_libraries(Audio PRIVATE libnyquist::libnyquist)
+
+# target_include_directories(Coollab-Properties SYSTEM INTERFACE lib/libnyquist/include)
+
+# ---Add dj_fft---
+target_include_directories(Audio SYSTEM PRIVATE lib/dj_fft)
+
+# ---Add RtAudioWrapper---
+add_subdirectory(lib/RtAudioWrapper)
+target_link_libraries(Audio PUBLIC RtAudioWrapper::RtAudioWrapper)
