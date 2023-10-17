@@ -1,5 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
+#include <exe_path/exe_path.h>
 #include <Audio/Audio.hpp>
 #include <quick_imgui/quick_imgui.hpp>
 
@@ -31,23 +32,15 @@ auto main(int argc, char* argv[]) -> int
 // #include <iostream>
 // #include <vector>
 #include "RtAudioWrapper/RtAudioWrapper.hpp"
-// #include "dj_fft.h"
-// #include "libnyquist/Common.h"
-// #include "libnyquist/Decoders.h"
 
-// TEST_CASE("libnyquist test : Opening a .wav file and reading its content in a struct")
-// {
-//     std::shared_ptr<nqr::AudioData> audioData = std::make_shared<nqr::AudioData>();
-//     nqr::NyquistIO                  io;
-//     io.Load(audioData.get(), (Cool::Path::root() / "tests/res/audio/10-1000-10000-20000.wav").string());
+TEST_CASE("Loading a .wav file")
+{
+    auto const data = Cool::AudioData{exe_path::dir() / "../tests/res/10-1000-10000-20000.wav"};
 
-//     CHECK(audioData->channelCount == 1);
-//     CHECK(audioData->sampleRate == 41000);
-//     CHECK(audioData->lengthSeconds == 4);
-//     CHECK(audioData->frameSize == 2);
-//     CHECK(audioData->samples.size() == 164000);
-//     CHECK(audioData->sourceFormat == 2);
-// }
+    CHECK(data.channels_count() == 1);
+    CHECK(data.sample_rate() == 41000);
+    CHECK(data.samples().size() == 164000);
+}
 
 // TEST_CASE("libnyquist test : Opening a .mp3 file in a struct, testing the Left channel signal values")
 // {

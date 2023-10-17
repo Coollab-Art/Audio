@@ -1,5 +1,3 @@
 #pragma once
 
-namespace Cool {
-
-} // namespace Cool
+#include "../../src/AudioData.h"

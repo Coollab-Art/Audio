@@ -3,7 +3,7 @@ project(Audio-tests)
 
 # ---Create executable---
 add_executable(${PROJECT_NAME} tests.cpp)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 # ---Set warning level---
 if(MSVC)
@@ -35,8 +35,16 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(doctest)
 target_link_libraries(${PROJECT_NAME} PRIVATE doctest::doctest)
 
+# ---Add exe_path---
+FetchContent_Declare(
+    exe_path
+    GIT_REPOSITORY https://github.com/CoolLibs/exe_path
+    GIT_TAG 4af9e16af2e7c0e3fd8565199b6801aa398b60c9
+)
+FetchContent_MakeAvailable(exe_path)
+target_link_libraries(${PROJECT_NAME} PRIVATE exe_path::exe_path)
+
 # ---Add quick_imgui---
-include(FetchContent)
 FetchContent_Declare(
     quick_imgui
     GIT_REPOSITORY https://github.com/CoolLibs/quick_imgui

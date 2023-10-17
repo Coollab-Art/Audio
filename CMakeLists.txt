@@ -4,7 +4,7 @@ set(WARNINGS_AS_ERRORS_FOR_AUDIO OFF CACHE BOOL "ON iff you want to treat warnin
 
 add_library(Audio)
 add_library(Cool::Audio ALIAS Audio)
-target_compile_features(Audio PUBLIC cxx_std_11)
+target_compile_features(Audio PUBLIC cxx_std_17)
 
 # ---Add source files---
 if(WARNINGS_AS_ERRORS_FOR_AUDIO)
