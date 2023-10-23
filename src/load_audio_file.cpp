@@ -1,4 +1,4 @@
-#include "load_audio_file.h"
+#include "load_audio_file.hpp"
 #include "libnyquist/Common.h"
 #include "libnyquist/Decoders.h"
 
