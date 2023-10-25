@@ -36,10 +36,8 @@ endif()
 add_subdirectory(lib/libnyquist)
 target_link_libraries(Audio PRIVATE libnyquist::libnyquist)
 
-# target_include_directories(Coollab-Properties SYSTEM INTERFACE lib/libnyquist/include)
-
 # ---Add dj_fft---
-target_include_directories(Audio SYSTEM PRIVATE lib/dj_fft)
+target_include_directories(Audio SYSTEM PUBLIC lib/dj_fft)
 
 # ---Add RtAudioWrapper---
 add_subdirectory(lib/RtAudioWrapper)
