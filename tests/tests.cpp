@@ -24,7 +24,7 @@ auto main(int argc, char* argv[]) -> int
         Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
         RtAudioW::player().play();
 
-        static constexpr size_t          N = 512;   // input size NB: Must be a power of 2 for dj::fft1d
+        static constexpr size_t          N = 1024;  // input size NB: Must be a power of 2 for dj::fft1d
         std::vector<std::complex<float>> myData(N); // input data
 
         quick_imgui::loop("Audio tests", [&]() { // Open a window and run all the ImGui-related code
@@ -42,7 +42,7 @@ auto main(int argc, char* argv[]) -> int
                 data.data(),
                 static_cast<int>(data.size()) / 2, // The second half is a mirror of the first half, so ne need to display it.
                 0, nullptr,
-                0.f, 1.f, // Values are between 0 and 1
+                0.f, 1.f,
                 {0.f, 100.f}
             );
             ImGui::End();
