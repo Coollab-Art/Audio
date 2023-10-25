@@ -5,6 +5,10 @@ project(Audio-tests)
 add_executable(${PROJECT_NAME} tests.cpp)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
+# ---Set output folder. Needs to be consistent so we know the path to load our audio files---
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build)
+
 # ---Set warning level---
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4)
