@@ -35,22 +35,20 @@ auto main(int argc, char* argv[]) -> int
 
 TEST_CASE("Loading a .wav file")
 {
-    auto player = RtAudioW::Player{};
-    Cool::load_audio_file(player, exe_path::dir() / "../tests/res/10-1000-10000-20000.wav");
+    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../tests/res/10-1000-10000-20000.wav");
 
-    CHECK(player.channels_count() == 1);
-    CHECK(player.sample_rate() == 41000);
-    CHECK(player.samples().size() == 164000);
+    CHECK(RtAudioW::player().audio_data().channels_count == 1);
+    CHECK(RtAudioW::player().audio_data().sample_rate == 41000);
+    CHECK(RtAudioW::player().audio_data().samples.size() == 164000);
 }
 
 TEST_CASE("Loading a .mp3 file")
 {
-    auto player = RtAudioW::Player{};
-    Cool::load_audio_file(player, exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
+    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
 
-    CHECK(player.channels_count() == 2);
-    CHECK(player.sample_rate() == 44100);
-    CHECK(player.samples().size() == 9819648);
+    CHECK(RtAudioW::player().audio_data().channels_count == 2);
+    CHECK(RtAudioW::player().audio_data().sample_rate == 44100);
+    CHECK(RtAudioW::player().audio_data().samples.size() == 9819648);
 }
 
 // TEST_CASE("dj_fft test : Opening a .wav file, reading its content in a struct, computing the FFT on it")
