@@ -3,7 +3,7 @@ project(Audio-tests)
 
 # ---Create executable---
 add_executable(${PROJECT_NAME} tests.cpp)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 # ---Set output folder. Needs to be consistent so we know the path to load our audio files---
 set_target_properties(${PROJECT_NAME} PROPERTIES

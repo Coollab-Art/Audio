@@ -20,6 +20,11 @@ auto main(int argc, char* argv[]) -> int
         && exit_code == 0 // Only open the window if the tests passed; this makes it easier to notice when some tests fail
     )
     {
+        // Input stream
+        std::vector<float>    data_from_input_stream{};
+        RtAudioW::InputStream input_stream{[&](std::span<float> buffer) {
+            data_from_input_stream.assign(buffer.begin(), buffer.end());
+        }};
         // Load the audio file
         Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
         RtAudioW::player().play();
@@ -37,6 +42,10 @@ auto main(int argc, char* argv[]) -> int
             });
 
             ImGui::Begin("Audio tests");
+            // Player
+            ImGui::SeparatorText("Player");
+            if (ImGui::Button(RtAudioW::player().properties().is_muted ? "Unmute" : "Mute"))
+                RtAudioW::player().properties().is_muted = !RtAudioW::player().properties().is_muted;
             ImGui::PlotHistogram(
                 "Spectrum",
                 data.data(),
@@ -45,6 +54,32 @@ auto main(int argc, char* argv[]) -> int
                 0.f, 1.f,
                 {0.f, 100.f}
             );
+            // Input stream
+            ImGui::SeparatorText("Input stream");
+            auto const input_device_ids = input_stream.device_ids();
+            if (ImGui::BeginCombo("Input device", input_stream.current_device_name().c_str()))
+            {
+                for (unsigned int id : input_device_ids)
+                {
+                    auto const info        = input_stream.device_info(id);
+                    bool const is_selected = info.name == input_stream.current_device_name();
+                    if (ImGui::Selectable(info.name.c_str(), is_selected))
+                        input_stream.set_device(id);
+
+                    if (is_selected) // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::PlotHistogram(
+                "Input Data",
+                data_from_input_stream.data(),
+                static_cast<int>(data_from_input_stream.size()),
+                0, nullptr,
+                -0.1f, 0.1f,
+                {0.f, 100.f}
+            );
+            //
             ImGui::End();
             ImGui::ShowDemoWindow();
         });
