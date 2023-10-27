@@ -23,4 +23,14 @@ auto compute_volume(RtAudioW::Player const& player, float average_duration_in_se
     return volume / static_cast<float>(width) / static_cast<float>(player.audio_data().channels_count);
 }
 
+auto compute_volume(std::span<float const> data) -> float
+{
+    float volume{0.f};
+    for (float const sample : data)
+    {
+        volume += std::abs(sample);
+    }
+    return volume / static_cast<float>(data.size());
+}
+
 } // namespace Cool
