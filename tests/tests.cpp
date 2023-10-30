@@ -29,7 +29,7 @@ auto main(int argc, char* argv[]) -> int
                                                std::cerr << error_message << '\n';
                                            }};
         // Load the audio file
-        Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
+        Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
         RtAudioW::player().play();
 
         static constexpr size_t          N = 1024;  // input size NB: Must be a power of 2 for dj::fft1d
@@ -93,7 +93,7 @@ auto main(int argc, char* argv[]) -> int
 
 TEST_CASE("Loading a .wav file")
 {
-    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../tests/res/10-1000-10000-20000.wav");
+    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/10-1000-10000-20000.wav");
 
     CHECK(RtAudioW::player().audio_data().channels_count == 1);
     CHECK(RtAudioW::player().audio_data().sample_rate == 41000);
@@ -102,7 +102,7 @@ TEST_CASE("Loading a .wav file")
 
 TEST_CASE("Loading a .mp3 file")
 {
-    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
+    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
 
     CHECK(RtAudioW::player().audio_data().channels_count == 2);
     CHECK(RtAudioW::player().audio_data().sample_rate == 44100);
@@ -112,7 +112,7 @@ TEST_CASE("Loading a .mp3 file")
 TEST_CASE("dj_fft test : Opening a .wav file, reading its content in a struct, computing the FFT on it")
 {
     // Load the audio file
-    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../tests/res/10-1000-10000-20000.wav");
+    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/10-1000-10000-20000.wav");
 
     size_t                           N = 65536; // input size NB: Must be a power of 2
     std::vector<std::complex<float>> myData;    // input data
