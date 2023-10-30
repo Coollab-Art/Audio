@@ -32,12 +32,12 @@ auto main(int argc, char* argv[]) -> int
         Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
         RtAudioW::player().play();
 
-        static constexpr size_t          N = 1024;  // input size NB: Must be a power of 2 for dj::fft1d
+        static constexpr int64_t         N = 1024;  // input size NB: Must be a power of 2 for dj::fft1d
         std::vector<std::complex<float>> myData(N); // input data
 
         quick_imgui::loop("Audio tests", [&]() { // Open a window and run all the ImGui-related code
-            for (size_t i = 0; i < N; i++)
-                myData[i] = RtAudioW::player().sample_unaltered_volume(i + RtAudioW::player().current_frame_index(), 0);
+            for (int64_t i = 0; i < N; i++)
+                myData[static_cast<size_t>(i)] = RtAudioW::player().sample_unaltered_volume(i + RtAudioW::player().current_frame_index(), 0);
             auto const fftData = dj::fft1d(myData, dj::fft_dir::DIR_FWD);
             auto       data    = std::vector<float>{};
             std::transform(fftData.begin(), fftData.end(), std::back_inserter(data), [](auto const x) {
@@ -114,11 +114,11 @@ TEST_CASE("dj_fft test : Opening a .wav file, reading its content in a struct, c
     // Load the audio file
     Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/10-1000-10000-20000.wav");
 
-    size_t                           N = 65536; // input size NB: Must be a power of 2
+    int64_t                          N = 65536; // input size NB: Must be a power of 2
     std::vector<std::complex<float>> myData;    // input data
 
     // Prepare data, using a loop because the source vector is of different size
-    for (size_t i = 0; i < N; i++)
+    for (int64_t i = 0; i < N; i++)
         myData.emplace_back(RtAudioW::player().sample_unaltered_volume(i, 0));
 
     auto const fftData = dj::fft1d(myData, dj::fft_dir::DIR_FWD);
