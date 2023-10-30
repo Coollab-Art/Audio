@@ -13,8 +13,8 @@
 
 auto main(int argc, char* argv[]) -> int
 {
-    const int  exit_code              = doctest::Context{}.run(); // Run all unit tests
-    const bool should_run_imgui_tests = argc < 2 || strcmp(argv[1], "-nogpu") != 0;
+    const int  exit_code              = doctest::Context{}.run();                   // Run all unit tests
+    const bool should_run_imgui_tests = argc < 2 || strcmp(argv[1], "-nogpu") != 0; // NOLINT(*pro-bounds-pointer-arithmetic)
     if (
         should_run_imgui_tests
         && exit_code == 0 // Only open the window if the tests passed; this makes it easier to notice when some tests fail
@@ -22,9 +22,12 @@ auto main(int argc, char* argv[]) -> int
     {
         // Input stream
         std::vector<float>    data_from_input_stream{};
-        RtAudioW::InputStream input_stream{[&](std::span<float> buffer) {
-            data_from_input_stream.assign(buffer.begin(), buffer.end());
-        }};
+        RtAudioW::InputStream input_stream{[&](std::span<float const> buffer) {
+                                               data_from_input_stream.assign(buffer.begin(), buffer.end());
+                                           },
+                                           [](RtAudioErrorType /* type */, std::string const& error_message) {
+                                               std::cerr << error_message << '\n';
+                                           }};
         // Load the audio file
         Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
         RtAudioW::player().play();
