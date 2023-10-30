@@ -7,3 +7,6 @@
 [submodule "lib/dj_fft"]
 	path = lib/dj_fft
 	url = https://github.com/jdupuy/dj_fft.git
+[submodule "lib/libnyquist"]
+	path = lib/libnyquist
+	url = https://github.com/CoolLibs/libnyquist
