@@ -1,4 +1,5 @@
 #include "compute_volume.hpp"
+#include <cmath>
 #include <cstdint>
 #include "RtAudioWrapper/RtAudioWrapper.hpp"
 
