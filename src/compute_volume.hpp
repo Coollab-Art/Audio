@@ -1,10 +1,10 @@
 #pragma once
-#include "RtAudioWrapper/RtAudioWrapper.hpp"
+#include <span>
 
 namespace Cool {
 
-/// Returns a number between 0 and 1.
-auto compute_volume(RtAudioW::Player const& player, float average_duration_in_seconds) -> float;
+/// Returns the Root Mean Square (RMS) of the samples in the buffer.
+/// The data MUST NOT be multi-channel. If it is, please merge them into a single channel by averaging the values of the various channels.
 auto compute_volume(std::span<float const> data) -> float;
 
 } // namespace Cool
