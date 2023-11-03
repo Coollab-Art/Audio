@@ -21,13 +21,10 @@ auto main(int argc, char* argv[]) -> int
     )
     {
         // Input stream
-        std::vector<float>    data_from_input_stream{};
-        RtAudioW::InputStream input_stream{[&](std::span<float const> buffer) {
-                                               data_from_input_stream.assign(buffer.begin(), buffer.end());
-                                           },
-                                           [](RtAudioErrorType /* type */, std::string const& error_message) {
-                                               std::cerr << error_message << '\n';
-                                           }};
+        RtAudioW::InputStream input_stream{
+            [](RtAudioErrorType /* type */, std::string const& error_message) {
+                std::cerr << error_message << '\n';
+            }};
         // Load the audio file
         Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
         RtAudioW::player().play();
@@ -74,6 +71,10 @@ auto main(int argc, char* argv[]) -> int
                 }
                 ImGui::EndCombo();
             }
+            auto data_from_input_stream = std::vector<float>{};
+            input_stream.for_each_sample(512, [&](float const sample) {
+                data_from_input_stream.push_back(sample);
+            });
             ImGui::PlotHistogram(
                 "Input Data",
                 data_from_input_stream.data(),
