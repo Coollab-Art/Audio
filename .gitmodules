@@ -4,9 +4,9 @@
 [submodule "lib/RtAudioWrapper"]
 	path = lib/RtAudioWrapper
 	url = https://github.com/CoolLibs/RtAudioWrapper.git
-[submodule "lib/dj_fft"]
-	path = lib/dj_fft
-	url = https://github.com/jdupuy/dj_fft.git
 [submodule "lib/libnyquist"]
 	path = lib/libnyquist
 	url = https://github.com/CoolLibs/libnyquist
+[submodule "lib/dj_fft"]
+	path = lib/dj_fft
+	url = https://github.com/CoolLibs/dj_fft
