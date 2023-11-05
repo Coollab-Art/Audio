@@ -11,6 +11,12 @@
 
 // Learn how to use Dear ImGui: https://coollibs.github.io/contribute/Programming/dear-imgui
 
+static auto window(int64_t idx, int64_t size) -> float
+{
+    float const t = static_cast<float>(idx) / static_cast<float>(size - 1);
+    return 1.f - std::abs(2.f * t - 1.f); // Triangular window
+}
+
 auto main(int argc, char* argv[]) -> int
 {
     const int  exit_code              = doctest::Context{}.run();                   // Run all unit tests
@@ -25,36 +31,46 @@ auto main(int argc, char* argv[]) -> int
             [](RtAudioErrorType /* type */, std::string const& error_message) {
                 std::cerr << error_message << '\n';
             }};
+        static constexpr size_t nb_samples_in_input_stream{512};
+        input_stream.set_nb_of_retained_samples(nb_samples_in_input_stream);
         // Load the audio file
         Audio::load_audio_file(Audio::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
         Audio::player().play();
 
-        static constexpr int64_t         N = 1024;  // input size NB: Must be a power of 2 for dj::fft1d
-        std::vector<std::complex<float>> myData(N); // input data
+        static constexpr int64_t fft_size{8000};
+        float                    max_spectrum_frequency_in_hz{15000.f};
 
         quick_imgui::loop("Audio tests", [&]() { // Open a window and run all the ImGui-related code
-            for (int64_t i = 0; i < N; i++)
-                myData[static_cast<size_t>(i)] = Audio::player().sample_unaltered_volume(i + Audio::player().current_frame_index(), 0);
-            auto const fftData = dj::fft1d(myData, dj::fft_dir::DIR_FWD);
-            auto       data    = std::vector<float>{};
-            std::transform(fftData.begin(), fftData.end(), std::back_inserter(data), [](auto const x) {
-                return std::abs(x);
-            });
+            auto const spectrum = Audio::fourier_transform(
+                fft_size,
+                [&](std::function<void(float)> const& callback) {
+                    for (int64_t i = 0; i < fft_size; i++)
+                        callback(
+                            window(i, fft_size)
+                            * Audio::player().sample_unaltered_volume(i + Audio::player().current_frame_index())
+                        );
+                },
+                static_cast<float>(Audio::player().audio_data().sample_rate),
+                max_spectrum_frequency_in_hz
+            );
 
             ImGui::Begin("Audio tests");
             // Player
             ImGui::SeparatorText("Player");
             if (ImGui::Button(Audio::player().properties().is_muted ? "Unmute" : "Mute"))
                 Audio::player().properties().is_muted = !Audio::player().properties().is_muted;
-            ImGui::PlotHistogram(
+            ImGui::PlotLines(
                 "Spectrum",
-                data.data(),
-                static_cast<int>(data.size()) / 2, // The second half is a mirror of the first half, so ne need to display it.
+                spectrum.data.data(),
+                static_cast<int>(spectrum.data.size()),
                 0, nullptr,
                 0.f, 1.f,
                 {0.f, 100.f}
             );
+            ImGui::SliderFloat("Max spectrum frequency", &max_spectrum_frequency_in_hz, 0.f, 22000.f, "%.0f Hertz");
+
             // Input stream
+            ImGui::NewLine();
             ImGui::SeparatorText("Input stream");
             auto const input_device_ids = input_stream.device_ids();
             if (ImGui::BeginCombo("Input device", input_stream.current_device_name().c_str()))
@@ -72,11 +88,11 @@ auto main(int argc, char* argv[]) -> int
                 ImGui::EndCombo();
             }
             auto data_from_input_stream = std::vector<float>{};
-            input_stream.for_each_sample(512, [&](float const sample) {
+            input_stream.for_each_sample(nb_samples_in_input_stream, [&](float const sample) {
                 data_from_input_stream.push_back(sample);
             });
-            ImGui::PlotHistogram(
-                "Input Data",
+            ImGui::PlotLines(
+                "Waveform",
                 data_from_input_stream.data(),
                 static_cast<int>(data_from_input_stream.size()),
                 0, nullptr,
@@ -115,32 +131,47 @@ TEST_CASE("Loading a .mp3 file")
     CHECK(Audio::player().audio_data().samples.size() == 9819648);
 }
 
-TEST_CASE("FFT")
+static auto is_big(float x) -> bool
 {
-    // Load the audio file
-    Audio::load_audio_file(Audio::player(), exe_path::dir() / "../../tests/res/10-1000-10000-20000.wav");
+    return x > 5.f;
+}
+static auto is_small(float x) -> bool
+{
+    return x < 0.1f;
+}
 
+static constexpr float TAU = 6.2831853071f;
+
+TEST_CASE("Fourier transform")
+{
     auto fft_input = std::vector<std::complex<float>>{};
 
-    static constexpr int64_t N = 65536; // FFT size. NB: Must be a power of 2
-    for (int64_t i = 0; i < N; i++)
-        fft_input.emplace_back(Audio::player().sample_unaltered_volume(i, 0)); // Only use 1 channel. This is simple, but ideally you should average the values across all the channels.
+    static constexpr int64_t sample_rate = 44000; // Allows us to detect frequencies up to sample_rate / 2 = 22000Hz
+    static constexpr int64_t fft_size    = 8000;  // Will give us a good enough resolution (fft_size / 2 = 4000 values, spread between 0Hz and 22000Hz)
 
-    auto const spectrum = dj::fft1d(fft_input, dj::fft_dir::DIR_FWD);
+    auto const spectrum = Audio::fourier_transform(
+        fft_size, [&](std::function<void(float)> const& callback) {
+            for (int64_t i = 0; i < fft_size; i++)
+            {
+                float time = static_cast<float>(i) / static_cast<float>(sample_rate);
+                callback(
+                    window(i, fft_size)
+                    * (std::sin(10.f * time * TAU)      // 10Hz frequency
+                       + std::sin(1000.f * time * TAU)  // 1000Hz frequency
+                       + std::sin(10000.f * time * TAU) // 10000Hz frequency
+                       + std::sin(20000.f * time * TAU) // 20000Hz frequency
+                    )
+                );
+            }
+        },
+        static_cast<float>(sample_rate)
+    );
 
-    CHECK(spectrum.size() == N);
-    CHECK(std::abs(spectrum[16]) == doctest::Approx(38.669884));
-    CHECK(std::abs(spectrum[1598]) == doctest::Approx(27.571739));
-    CHECK(std::abs(spectrum[1599]) == doctest::Approx(21.486385));
-    CHECK(std::abs(spectrum[15984]) == doctest::Approx(29.728823));
-    CHECK(std::abs(spectrum[15985]) == doctest::Approx(18.963114));
-    CHECK(std::abs(spectrum[31968]) == doctest::Approx(10.106586));
-    CHECK(std::abs(spectrum[31969]) == doctest::Approx(35.716843));
-    CHECK(std::abs(spectrum[33567]) == doctest::Approx(35.765961));
-    CHECK(std::abs(spectrum[33568]) == doctest::Approx(10.012813));
-    CHECK(std::abs(spectrum[49551]) == doctest::Approx(19.058596));
-    CHECK(std::abs(spectrum[49552]) == doctest::Approx(29.651283));
-    CHECK(std::abs(spectrum[63937]) == doctest::Approx(21.579424));
-    CHECK(std::abs(spectrum[63938]) == doctest::Approx(27.487740));
-    CHECK(std::abs(spectrum[65520]) == doctest::Approx(38.676113));
+    CHECK(is_big(spectrum.at_frequency(10.f)));
+    CHECK(is_big(spectrum.at_frequency(1000.f)));
+    CHECK(is_big(spectrum.at_frequency(10000.f)));
+    CHECK(is_big(spectrum.at_frequency(20000.f)));
+    CHECK(is_small(spectrum.at_frequency(500.f)));
+    CHECK(is_small(spectrum.at_frequency(5000.f)));
+    CHECK(is_small(spectrum.at_frequency(15000.f)));
 }

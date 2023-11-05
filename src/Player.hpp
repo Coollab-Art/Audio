@@ -1,5 +1,4 @@
 #pragma once
-
 #include <rtaudio/RtAudio.h>
 #include <cstdint>
 #include <vector>

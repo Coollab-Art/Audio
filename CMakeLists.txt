@@ -37,7 +37,7 @@ add_subdirectory(lib/libnyquist)
 target_link_libraries(Audio PRIVATE libnyquist::libnyquist)
 
 # ---Add dj_fft---
-target_include_directories(Audio SYSTEM PUBLIC lib/dj_fft)
+target_include_directories(Audio SYSTEM PRIVATE lib/dj_fft)
 
 # ---Add RtAudioWrapper---
 add_subdirectory(lib/RtAudioWrapper)
