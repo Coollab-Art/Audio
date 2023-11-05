@@ -1,9 +1,7 @@
 #include "compute_volume.hpp"
 #include <cmath>
-#include <cstdint>
-#include "RtAudioWrapper/RtAudioWrapper.hpp"
 
-namespace Cool {
+namespace Audio {
 
 auto compute_volume(std::span<float const> data) -> float
 {
@@ -16,4 +14,4 @@ auto compute_volume(std::span<float const> data) -> float
     return std::sqrt(sum_of_squares / static_cast<float>(data.size())); // TODO(Audio) Return the result in decibels ?
 }
 
-} // namespace Cool
+} // namespace Audio

@@ -1,10 +1,12 @@
 #pragma once
 #include <filesystem>
-#include "RtAudioWrapper/RtAudioWrapper.hpp"
+#include "Player.hpp"
 
-namespace Cool {
+namespace Audio {
 
 /// Throws an exception if the loading fails (e.g. if the file is not found).
-void load_audio_file(RtAudioW::Player&, std::filesystem::path const&);
+auto load_audio_file(std::filesystem::path const&) -> AudioData;
+/// Throws an exception if the loading fails (e.g. if the file is not found).
+void load_audio_file(Player&, std::filesystem::path const&);
 
-} // namespace Cool
+} // namespace Audio

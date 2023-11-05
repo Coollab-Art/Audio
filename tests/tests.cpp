@@ -21,20 +21,20 @@ auto main(int argc, char* argv[]) -> int
     )
     {
         // Input stream
-        RtAudioW::InputStream input_stream{
+        Audio::InputStream input_stream{
             [](RtAudioErrorType /* type */, std::string const& error_message) {
                 std::cerr << error_message << '\n';
             }};
         // Load the audio file
-        Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
-        RtAudioW::player().play();
+        Audio::load_audio_file(Audio::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
+        Audio::player().play();
 
         static constexpr int64_t         N = 1024;  // input size NB: Must be a power of 2 for dj::fft1d
         std::vector<std::complex<float>> myData(N); // input data
 
         quick_imgui::loop("Audio tests", [&]() { // Open a window and run all the ImGui-related code
             for (int64_t i = 0; i < N; i++)
-                myData[static_cast<size_t>(i)] = RtAudioW::player().sample_unaltered_volume(i + RtAudioW::player().current_frame_index(), 0);
+                myData[static_cast<size_t>(i)] = Audio::player().sample_unaltered_volume(i + Audio::player().current_frame_index(), 0);
             auto const fftData = dj::fft1d(myData, dj::fft_dir::DIR_FWD);
             auto       data    = std::vector<float>{};
             std::transform(fftData.begin(), fftData.end(), std::back_inserter(data), [](auto const x) {
@@ -44,8 +44,8 @@ auto main(int argc, char* argv[]) -> int
             ImGui::Begin("Audio tests");
             // Player
             ImGui::SeparatorText("Player");
-            if (ImGui::Button(RtAudioW::player().properties().is_muted ? "Unmute" : "Mute"))
-                RtAudioW::player().properties().is_muted = !RtAudioW::player().properties().is_muted;
+            if (ImGui::Button(Audio::player().properties().is_muted ? "Unmute" : "Mute"))
+                Audio::player().properties().is_muted = !Audio::player().properties().is_muted;
             ImGui::PlotHistogram(
                 "Spectrum",
                 data.data(),
@@ -88,55 +88,59 @@ auto main(int argc, char* argv[]) -> int
             ImGui::ShowDemoWindow();
         });
     }
-    RtAudioW::shut_down();
+    Audio::shut_down();
     return exit_code;
+}
+
+TEST_CASE("At least one API has been compiled")
+{
+    Audio::Player player{}; // This will assert if no API is available, which is something we want to detect.
 }
 
 TEST_CASE("Loading a .wav file")
 {
-    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/10-1000-10000-20000.wav");
+    Audio::load_audio_file(Audio::player(), exe_path::dir() / "../../tests/res/10-1000-10000-20000.wav");
 
-    CHECK(RtAudioW::player().audio_data().channels_count == 1);
-    CHECK(RtAudioW::player().audio_data().sample_rate == 41000);
-    CHECK(RtAudioW::player().audio_data().samples.size() == 164000);
+    CHECK(Audio::player().audio_data().channels_count == 1);
+    CHECK(Audio::player().audio_data().sample_rate == 41000);
+    CHECK(Audio::player().audio_data().samples.size() == 164000);
 }
 
 TEST_CASE("Loading a .mp3 file")
 {
-    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
+    Audio::load_audio_file(Audio::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
 
-    CHECK(RtAudioW::player().audio_data().channels_count == 2);
-    CHECK(RtAudioW::player().audio_data().sample_rate == 44100);
-    CHECK(RtAudioW::player().audio_data().samples.size() == 9819648);
+    CHECK(Audio::player().audio_data().channels_count == 2);
+    CHECK(Audio::player().audio_data().sample_rate == 44100);
+    CHECK(Audio::player().audio_data().samples.size() == 9819648);
 }
 
-TEST_CASE("dj_fft test : Opening a .wav file, reading its content in a struct, computing the FFT on it")
+TEST_CASE("FFT")
 {
     // Load the audio file
-    Cool::load_audio_file(RtAudioW::player(), exe_path::dir() / "../../tests/res/10-1000-10000-20000.wav");
+    Audio::load_audio_file(Audio::player(), exe_path::dir() / "../../tests/res/10-1000-10000-20000.wav");
 
-    int64_t                          N = 65536; // input size NB: Must be a power of 2
-    std::vector<std::complex<float>> myData;    // input data
+    auto fft_input = std::vector<std::complex<float>>{};
 
-    // Prepare data, using a loop because the source vector is of different size
+    static constexpr int64_t N = 65536; // FFT size. NB: Must be a power of 2
     for (int64_t i = 0; i < N; i++)
-        myData.emplace_back(RtAudioW::player().sample_unaltered_volume(i, 0));
+        fft_input.emplace_back(Audio::player().sample_unaltered_volume(i, 0)); // Only use 1 channel. This is simple, but ideally you should average the values across all the channels.
 
-    auto const fftData = dj::fft1d(myData, dj::fft_dir::DIR_FWD);
+    auto const spectrum = dj::fft1d(fft_input, dj::fft_dir::DIR_FWD);
 
-    CHECK(fftData.size() == N);
-    CHECK(std::abs(fftData[16]) == doctest::Approx(38.669884));
-    CHECK(std::abs(fftData[1598]) == doctest::Approx(27.571739));
-    CHECK(std::abs(fftData[1599]) == doctest::Approx(21.486385));
-    CHECK(std::abs(fftData[15984]) == doctest::Approx(29.728823));
-    CHECK(std::abs(fftData[15985]) == doctest::Approx(18.963114));
-    CHECK(std::abs(fftData[31968]) == doctest::Approx(10.106586));
-    CHECK(std::abs(fftData[31969]) == doctest::Approx(35.716843));
-    CHECK(std::abs(fftData[33567]) == doctest::Approx(35.765961));
-    CHECK(std::abs(fftData[33568]) == doctest::Approx(10.012813));
-    CHECK(std::abs(fftData[49551]) == doctest::Approx(19.058596));
-    CHECK(std::abs(fftData[49552]) == doctest::Approx(29.651283));
-    CHECK(std::abs(fftData[63937]) == doctest::Approx(21.579424));
-    CHECK(std::abs(fftData[63938]) == doctest::Approx(27.487740));
-    CHECK(std::abs(fftData[65520]) == doctest::Approx(38.676113));
+    CHECK(spectrum.size() == N);
+    CHECK(std::abs(spectrum[16]) == doctest::Approx(38.669884));
+    CHECK(std::abs(spectrum[1598]) == doctest::Approx(27.571739));
+    CHECK(std::abs(spectrum[1599]) == doctest::Approx(21.486385));
+    CHECK(std::abs(spectrum[15984]) == doctest::Approx(29.728823));
+    CHECK(std::abs(spectrum[15985]) == doctest::Approx(18.963114));
+    CHECK(std::abs(spectrum[31968]) == doctest::Approx(10.106586));
+    CHECK(std::abs(spectrum[31969]) == doctest::Approx(35.716843));
+    CHECK(std::abs(spectrum[33567]) == doctest::Approx(35.765961));
+    CHECK(std::abs(spectrum[33568]) == doctest::Approx(10.012813));
+    CHECK(std::abs(spectrum[49551]) == doctest::Approx(19.058596));
+    CHECK(std::abs(spectrum[49552]) == doctest::Approx(29.651283));
+    CHECK(std::abs(spectrum[63937]) == doctest::Approx(21.579424));
+    CHECK(std::abs(spectrum[63938]) == doctest::Approx(27.487740));
+    CHECK(std::abs(spectrum[65520]) == doctest::Approx(38.676113));
 }
