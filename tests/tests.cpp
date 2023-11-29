@@ -17,6 +17,20 @@ static auto window(int64_t idx, int64_t size) -> float
     return 1.f - std::abs(2.f * t - 1.f); // Triangular window
 }
 
+static auto get_device_name_impl(Audio::InputStream const& input_stream, Audio::UseDefaultDevice) -> std::string
+{
+    return "Use default device: " + input_stream.device_info(input_stream.default_device_id()).name;
+}
+static auto get_device_name_impl(Audio::InputStream const&, Audio::UseGivenDevice const& device) -> std::string
+{
+    return device.name;
+}
+
+static auto get_device_name(Audio::InputStream const& input_stream, Audio::SelectedDevice const& selected_device) -> std::string
+{
+    return std::visit([&](auto&& selected_device) { return get_device_name_impl(input_stream, selected_device); }, selected_device);
+}
+
 auto main(int argc, char* argv[]) -> int
 {
     const int  exit_code              = doctest::Context{}.run();                   // Run all unit tests
@@ -30,7 +44,8 @@ auto main(int argc, char* argv[]) -> int
         Audio::InputStream input_stream{
             [](RtAudioErrorType /* type */, std::string const& error_message) {
                 std::cerr << error_message << '\n';
-            }};
+            }
+        };
         static constexpr size_t nb_samples_in_input_stream{512};
         input_stream.set_nb_of_retained_samples(nb_samples_in_input_stream);
         // Load the audio file
@@ -73,14 +88,23 @@ auto main(int argc, char* argv[]) -> int
             ImGui::NewLine();
             ImGui::SeparatorText("Input stream");
             auto const input_device_ids = input_stream.device_ids();
-            if (ImGui::BeginCombo("Input device", input_stream.current_device_name().c_str()))
+            auto const combo_text       = get_device_name(input_stream, input_stream.current_device());
+            if (ImGui::BeginCombo("Input device", combo_text.c_str()))
             {
-                for (unsigned int id : input_device_ids)
+                bool const is_selected = std::holds_alternative<Audio::UseDefaultDevice>(input_stream.current_device());
+                if (ImGui::Selectable(get_device_name_impl(input_stream, Audio::UseDefaultDevice{}).c_str(), is_selected))
+                    input_stream.use_default_device();
+                if (is_selected) // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                    ImGui::SetItemDefaultFocus();
+
+                for (auto const id : input_device_ids)
                 {
                     auto const info        = input_stream.device_info(id);
-                    bool const is_selected = info.name == input_stream.current_device_name();
+                    bool const is_selected = info.name == combo_text;
                     if (ImGui::Selectable(info.name.c_str(), is_selected))
-                        input_stream.set_device(id);
+                    {
+                        input_stream.use_given_device(info);
+                    }
 
                     if (is_selected) // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
                         ImGui::SetItemDefaultFocus();
