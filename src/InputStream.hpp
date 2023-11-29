@@ -39,6 +39,7 @@ public:
     auto device_info(unsigned int device_id) const -> RtAudio::DeviceInfo;
     /// Returns 0 if the device is not found.
     auto find_device_id_by_name(std::string const& name) const -> unsigned int;
+    auto find_device_info_by_name(std::string const& name) const -> RtAudio::DeviceInfo;
     ///
     auto current_device() const -> SelectedDevice const& { return _selected_device; }
     /// Returns the sample rate of the currently used device.
@@ -49,6 +50,9 @@ public:
     /// Sets the device to use.
     /// By default, when an InputStream is created it uses the default input device selected by the OS.
     void use_default_device();
+    /// Sets the device to use.
+    /// By default, when an InputStream is created it uses the default input device selected by the OS.
+    void use_device(SelectedDevice);
     ///
     auto current_device_is_valid() const -> bool;
     /// Closes the current stream, disconnects from the current device.

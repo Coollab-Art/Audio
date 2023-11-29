@@ -44,14 +44,19 @@ auto InputStream::current_device_is_valid() const -> bool
 
 auto InputStream::find_device_id_by_name(std::string const& name) const -> unsigned int
 {
+    return find_device_info_by_name(name).ID;
+}
+
+auto InputStream::find_device_info_by_name(std::string const& name) const -> RtAudio::DeviceInfo
+{
     auto const ids = device_ids();
     for (auto const id : ids)
     {
         auto const info = device_info(id);
         if (info.name == name)
-            return id;
+            return info;
     }
-    return 0;
+    return {};
 }
 
 auto InputStream::device_ids() const -> std::vector<unsigned int>
@@ -133,6 +138,19 @@ void InputStream::use_default_device()
 {
     _selected_device = UseDefaultDevice{};
     set_device(device_info(_backend.getDefaultInputDevice()));
+}
+
+void InputStream::use_device(SelectedDevice device)
+{
+    _selected_device = std::move(device);
+    if (std::holds_alternative<UseDefaultDevice>(_selected_device))
+    {
+        set_device(device_info(_backend.getDefaultInputDevice()));
+    }
+    else
+    {
+        set_device(find_device_info_by_name(std::get<UseGivenDevice>(_selected_device).name));
+    };
 }
 
 void InputStream::set_device(RtAudio::DeviceInfo const& info)
