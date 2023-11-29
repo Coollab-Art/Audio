@@ -1,13 +1,57 @@
 #include "InputStream.hpp"
 #include <mutex>
 #include <span>
+#include <variant>
 
 namespace Audio {
 
 InputStream::InputStream(RtAudioErrorCallback error_callback)
 {
     _backend.setErrorCallback(std::move(error_callback));
-    set_device(_backend.getDefaultInputDevice());
+}
+
+InputStream::~InputStream()
+{
+    close();
+}
+
+void InputStream::update()
+{
+    if (std::holds_alternative<UseDefaultDevice>(_selected_device))
+    {
+        auto const default_device_id = _backend.getDefaultInputDevice();
+        if (default_device_id != _current_device_id)
+            set_device(device_info(default_device_id));
+    }
+    else
+    {
+        // If the stream stopped running (because the device was removed), check if the device has come back, and if so restart the stream.
+        if (current_device_is_valid())
+            return;
+
+        auto const id = find_device_id_by_name(std::get<UseGivenDevice>(_selected_device).name);
+        if (id == 0)
+            return;
+
+        set_device(device_info(id));
+    }
+}
+
+auto InputStream::current_device_is_valid() const -> bool
+{
+    return _backend.isStreamRunning();
+}
+
+auto InputStream::find_device_id_by_name(std::string const& name) const -> unsigned int
+{
+    auto const ids = device_ids();
+    for (auto const id : ids)
+    {
+        auto const info = device_info(id);
+        if (info.name == name)
+            return id;
+    }
+    return 0;
 }
 
 auto InputStream::device_ids() const -> std::vector<unsigned int>
@@ -19,6 +63,11 @@ auto InputStream::device_ids() const -> std::vector<unsigned int>
         return info.inputChannels == 0;
     });
     return ids;
+}
+
+auto InputStream::default_device_id() const -> unsigned int
+{
+    return _backend.getDefaultInputDevice();
 }
 
 auto InputStream::device_info(unsigned int device_id) const -> RtAudio::DeviceInfo
@@ -74,26 +123,43 @@ auto audio_input_callback(void* /* output_buffer */, void* input_buffer, unsigne
     return 0;
 }
 
-void InputStream::set_device(unsigned int device_id)
+void InputStream::use_given_device(RtAudio::DeviceInfo const& info)
 {
-    if (_backend.isStreamOpen())
-        _backend.closeStream();
+    _selected_device = UseGivenDevice{info.name};
+    set_device(info);
+}
+
+void InputStream::use_default_device()
+{
+    _selected_device = UseDefaultDevice{};
+    set_device(device_info(_backend.getDefaultInputDevice()));
+}
+
+void InputStream::set_device(RtAudio::DeviceInfo const& info)
+{
+    close(); // Close the current stream if there was one. We want to reopen one with the new device.
 
     { // Clear the samples, they do not correspond to the new device. (Shouldn't really matter, but I guess this is technically more correct)
         std::lock_guard const lock{_samples_mutex};
         _samples.clear();
     }
 
-    auto const                info = _backend.getDeviceInfo(device_id);
     RtAudio::StreamParameters params;
-    params.deviceId  = device_id;
+    params.deviceId  = info.ID;
     params.nChannels = 1;
     unsigned int nb_frames{512};                         // 512 is a decent value that seems to work well.
     auto const   sample_rate = info.preferredSampleRate; // TODO(Audio-Philippe) Should we use preferredSampleRate or currentSampleRate?
     _backend.openStream(nullptr, &params, RTAUDIO_FLOAT32, sample_rate, &nb_frames, &audio_input_callback, this);
     _backend.startStream();
-    _current_input_device_name        = info.name;
+
     _current_input_device_sample_rate = sample_rate;
+    _current_device_id                = info.ID;
+}
+
+void InputStream::close()
+{
+    if (_backend.isStreamOpen())
+        _backend.closeStream();
 }
 
 } // namespace Audio
