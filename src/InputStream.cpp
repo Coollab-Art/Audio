@@ -20,7 +20,7 @@ void InputStream::update()
     if (std::holds_alternative<UseDefaultDevice>(_selected_device))
     {
         auto const default_device_id = _backend.getDefaultInputDevice();
-        if (default_device_id != _current_device_id)
+        if (default_device_id != _current_device_id || !_backend.isStreamRunning())
             set_device(device_info(default_device_id));
     }
     else
