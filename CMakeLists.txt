@@ -35,9 +35,11 @@ endif()
 # ---Add libnyquist---
 add_subdirectory(lib/libnyquist)
 target_link_libraries(Audio PRIVATE libnyquist::libnyquist)
+install(FILES "lib/libnyquist/LICENSE" DESTINATION "license/libnyquist")
 
 # ---Add dj_fft---
 target_include_directories(Audio SYSTEM PRIVATE lib/dj_fft)
+install(FILES "lib/dj_fft/LICENSE.txt" DESTINATION "license/dj_fft")
 
 # ---Add RtAudioWrapper---
 add_subdirectory(lib/RtAudioWrapper)
