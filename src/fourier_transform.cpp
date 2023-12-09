@@ -44,7 +44,7 @@ auto fourier_transform(size_t samples_count, ForEachSample const& for_each_sampl
     auto        fft_output = dj::fft1d(fft_input, dj::fft_dir::DIR_FWD);
     float const delta_between_frequencies{audio_data_sample_rate / static_cast<float>(fft_output.size())}; // The values in the `fft_output` correspond to frequencies between 0 and sample_rate, evenly spaced.
 
-    // TODO(Audio-Philippe) Instead of computing the fft on a signal with many samples, and then resizing it to fit the requested `max_output_frequency_in_hz`, we could reduce it's sample rate before computing the fft, to minimize the number of frequencies that are computed for nothing (since they will be discarded afterwards anyways).
+    // TODO(Audio) Instead of computing the fft on a signal with many samples, and then resizing it to fit the requested `max_output_frequency_in_hz`, we could reduce it's sample rate before computing the fft, to minimize the number of frequencies that are computed for nothing (since they will be discarded afterwards anyways).
 
     // Ignore the redondant information and the frequencies that are above max_frequency_in_hz.
     {
