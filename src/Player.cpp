@@ -123,12 +123,15 @@ void Player::pause()
     _is_playing = false;
 }
 
-void Player::set_time(float time_in_seconds)
+auto Player::set_time(float time_in_seconds) -> bool
 {
-    _next_frame_to_play = static_cast<int64_t>(
+    auto const next_frame_to_play = static_cast<int64_t>(
         static_cast<float>(_data.sample_rate)
         * time_in_seconds
     );
+    bool const has_changed = next_frame_to_play != _next_frame_to_play;
+    _next_frame_to_play    = next_frame_to_play;
+    return has_changed;
 }
 
 auto Player::get_time() const -> float

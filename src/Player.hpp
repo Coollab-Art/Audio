@@ -78,7 +78,8 @@ public:
     ///
     [[nodiscard]] auto is_playing() const -> bool { return _is_playing; }
     /// Makes the player jump to a specific moment in time.
-    void set_time(float time_in_seconds);
+    /// Return true iff the time has actually changed (i.e. the time that was passed to the function is different from the time that was currently set).
+    auto set_time(float time_in_seconds) -> bool;
     /// Returns the moment in time the player is currently playing.
     [[nodiscard]] auto get_time() const -> float;
 
