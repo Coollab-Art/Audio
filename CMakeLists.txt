@@ -33,6 +33,7 @@ if(WARNINGS_AS_ERRORS_FOR_AUDIO)
 endif()
 
 # ---Add libnyquist---
+set(LIBNYQUIST_BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)
 add_subdirectory(lib/libnyquist)
 target_link_libraries(Audio PRIVATE libnyquist::libnyquist)
 install(FILES "lib/libnyquist/LICENSE" DESTINATION "license/libnyquist")
