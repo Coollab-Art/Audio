@@ -62,7 +62,8 @@ public:
 private:
     friend auto audio_input_callback(void* output_buffer, void* input_buffer, unsigned int frames_count, double stream_time, RtAudioStreamStatus status, void* user_data) -> int;
 
-    void set_device(RtAudio::DeviceInfo const& info);
+    void open_device(RtAudio::DeviceInfo const& info);
+    void open_selected_device();
     /// /!\ YOU MUST LOCK `_samples_mutex` before using this function
     void shrink_samples_to_fit();
 

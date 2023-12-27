@@ -21,7 +21,7 @@ void InputStream::update()
     {
         auto const default_device_id = _backend.getDefaultInputDevice();
         if (default_device_id != _current_device_id || !_backend.isStreamRunning())
-            set_device(device_info(default_device_id));
+            open_device(device_info(default_device_id));
     }
     else
     {
@@ -33,7 +33,7 @@ void InputStream::update()
         if (id == 0)
             return;
 
-        set_device(device_info(id));
+        open_device(device_info(id));
     }
 }
 
@@ -131,29 +131,33 @@ auto audio_input_callback(void* /* output_buffer */, void* input_buffer, unsigne
 void InputStream::use_given_device(RtAudio::DeviceInfo const& info)
 {
     _selected_device = UseGivenDevice{info.name};
-    set_device(info);
+    if (_backend.isStreamOpen())
+        open_device(info);
 }
 
 void InputStream::use_default_device()
 {
     _selected_device = UseDefaultDevice{};
-    set_device(device_info(_backend.getDefaultInputDevice()));
+    if (_backend.isStreamOpen())
+        open_device(device_info(_backend.getDefaultInputDevice()));
 }
 
 void InputStream::use_device(SelectedDevice device)
 {
     _selected_device = std::move(device);
-    if (std::holds_alternative<UseDefaultDevice>(_selected_device))
-    {
-        set_device(device_info(_backend.getDefaultInputDevice()));
-    }
-    else
-    {
-        set_device(find_device_info_by_name(std::get<UseGivenDevice>(_selected_device).name));
-    };
+    if (_backend.isStreamOpen())
+        open_selected_device();
 }
 
-void InputStream::set_device(RtAudio::DeviceInfo const& info)
+void InputStream::open_selected_device()
+{
+    if (std::holds_alternative<UseDefaultDevice>(_selected_device))
+        open_device(device_info(_backend.getDefaultInputDevice()));
+    else
+        open_device(find_device_info_by_name(std::get<UseGivenDevice>(_selected_device).name));
+}
+
+void InputStream::open_device(RtAudio::DeviceInfo const& info)
 {
     close(); // Close the current stream if there was one. We want to reopen one with the new device.
 
@@ -178,6 +182,7 @@ void InputStream::close()
 {
     if (_backend.isStreamOpen())
         _backend.closeStream();
+    _current_device_id = 0;
 }
 
 } // namespace Audio
