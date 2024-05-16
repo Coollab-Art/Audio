@@ -24,7 +24,7 @@ struct AudioData {
 struct PlayerProperties {
     float volume{1.f};
     bool  is_muted{false};
-    bool  does_loop{false};
+    bool  does_loop{true};
 };
 
 /// A player that will output sound to your default output device.
