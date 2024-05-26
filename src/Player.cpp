@@ -100,7 +100,7 @@ void Player::set_audio_data(AudioData data)
     if (backend().isStreamOpen())
         backend().closeStream(); // Otherwise data race with the audio thread that is reading _audio_data. Could cause crashes.
 
-    float const current_time = get_time();
+    double const current_time = get_time();
 
     _data = std::move(data);
     set_time(current_time); // Need to adjust the _next_frame_to_play so that we will be at the same point in time in both audios even if they have different sample rates.
@@ -123,10 +123,10 @@ void Player::pause()
     _is_playing = false;
 }
 
-auto Player::set_time(float time_in_seconds) -> bool
+auto Player::set_time(double time_in_seconds) -> bool
 {
     auto const next_frame_to_play = static_cast<int64_t>(
-        static_cast<float>(_data.sample_rate)
+        static_cast<double>(_data.sample_rate)
         * time_in_seconds
     );
     bool const has_changed = next_frame_to_play != _next_frame_to_play;
@@ -134,12 +134,12 @@ auto Player::set_time(float time_in_seconds) -> bool
     return has_changed;
 }
 
-auto Player::get_time() const -> float
+auto Player::get_time() const -> double
 {
     if (_data.sample_rate == 0)
-        return 0.f;
-    return static_cast<float>(_next_frame_to_play)
-           / static_cast<float>(_data.sample_rate);
+        return 0.;
+    return static_cast<double>(_next_frame_to_play)
+           / static_cast<double>(_data.sample_rate);
 }
 
 static auto mod(int64_t a, int64_t b) -> int64_t

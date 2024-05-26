@@ -79,9 +79,9 @@ public:
     [[nodiscard]] auto is_playing() const -> bool { return _is_playing; }
     /// Makes the player jump to a specific moment in time.
     /// Return true iff the time has actually changed (i.e. the time that was passed to the function is different from the time that was currently set).
-    auto set_time(float time_in_seconds) -> bool;
+    auto set_time(double time_in_seconds) -> bool;
     /// Returns the moment in time the player is currently playing.
-    [[nodiscard]] auto get_time() const -> float;
+    [[nodiscard]] auto get_time() const -> double;
 
     /// Checks if the default device has changed (e.g. the user has just plugged in some headphones)
     /// and switches device accordingly.
