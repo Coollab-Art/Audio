@@ -12,6 +12,14 @@ Then include it as:
 ```cpp
 #include <Audio/Audio.hpp>
 ```
+<br/>
+
+**IMPORTANT**: On MacOS, in order for your application to be able to access the microphone (when installing your app on end-users machines), you need to add this in your *Info.plist* file:
+```xml
+<key>NSMicrophoneUsageDescription</key>
+<string>This app requires microphone access because [your reason here].</string>
+```
+See [the documentation about this](https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources/requesting_authorization_for_media_capture_on_macos?language=objc).
 
 ## Running the tests
 
