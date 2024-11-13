@@ -51,7 +51,7 @@ auto main(int argc, char* argv[]) -> int
     static constexpr size_t nb_samples_in_input_stream{512};
     input_stream.set_nb_of_retained_samples(nb_samples_in_input_stream);
     // Load the audio file
-    Audio::load_audio_file(Audio::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
+    Audio::load_audio_file(Audio::player(), exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
     Audio::player().play();
 
     static constexpr int64_t fft_size{8000};
@@ -140,7 +140,7 @@ TEST_CASE("At least one API has been compiled")
 
 TEST_CASE("Loading a .wav file")
 {
-    Audio::load_audio_file(Audio::player(), exe_path::dir() / "../../tests/res/10-1000-10000-20000.wav");
+    Audio::load_audio_file(Audio::player(), exe_path::dir() / "../tests/res/10-1000-10000-20000.wav");
 
     CHECK(Audio::player().audio_data().channels_count == 1);
     CHECK(Audio::player().audio_data().sample_rate == 41000);
@@ -149,7 +149,7 @@ TEST_CASE("Loading a .wav file")
 
 TEST_CASE("Loading a .mp3 file")
 {
-    Audio::load_audio_file(Audio::player(), exe_path::dir() / "../../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
+    Audio::load_audio_file(Audio::player(), exe_path::dir() / "../tests/res/Monteverdi - L'Orfeo, Toccata.mp3");
 
     CHECK(Audio::player().audio_data().channels_count == 2);
     CHECK(Audio::player().audio_data().sample_rate == 44100);

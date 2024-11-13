@@ -7,7 +7,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 # ---Set output folder. Needs to be consistent so we know the path to load our audio files---
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${CMAKE_BUILD_TYPE})
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build)
 
 # ---Set warning level---
 if(MSVC)
