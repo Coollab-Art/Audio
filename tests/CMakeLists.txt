@@ -52,7 +52,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE exe_path::exe_path)
 FetchContent_Declare(
     quick_imgui
     GIT_REPOSITORY https://github.com/CoolLibs/quick_imgui
-    GIT_TAG 1a2c38b9976d81889799fe1fb3e0c993dd787a70
+    GIT_TAG 904d6b9141bd7226a6e36ded6394c6706e004b7f
 )
 FetchContent_MakeAvailable(quick_imgui)
 target_include_directories(Audio SYSTEM PRIVATE ${quick_imgui_SOURCE_DIR}/lib) # Give our library access to Dear ImGui
