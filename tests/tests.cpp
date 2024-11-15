@@ -87,6 +87,7 @@ auto main(int argc, char* argv[]) -> int
         ImGui::SliderFloat("Max spectrum frequency", &max_spectrum_frequency_in_hz, 0.f, 22000.f, "%.0f Hertz");
 
         // Input stream
+        input_stream.update();
         ImGui::NewLine();
         ImGui::SeparatorText("Input stream");
         auto const input_device_ids = input_stream.device_ids();
