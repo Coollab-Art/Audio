@@ -42,7 +42,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE doctest::doctest)
 # ---Add exe_path---
 FetchContent_Declare(
     exe_path
-    GIT_REPOSITORY https://github.com/CoolLibs/exe_path
+    GIT_REPOSITORY https://github.com/Coollab-Art/exe_path
     GIT_TAG 4af9e16af2e7c0e3fd8565199b6801aa398b60c9
 )
 FetchContent_MakeAvailable(exe_path)
@@ -51,7 +51,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE exe_path::exe_path)
 # ---Add quick_imgui---
 FetchContent_Declare(
     quick_imgui
-    GIT_REPOSITORY https://github.com/CoolLibs/quick_imgui
+    GIT_REPOSITORY https://github.com/Coollab-Art/quick_imgui
     GIT_TAG 904d6b9141bd7226a6e36ded6394c6706e004b7f
 )
 FetchContent_MakeAvailable(quick_imgui)

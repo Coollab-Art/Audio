@@ -9,8 +9,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
 
-// Learn how to use Dear ImGui: https://coollibs.github.io/contribute/Programming/dear-imgui
-
 static auto window(int64_t idx, int64_t size) -> float
 {
     float const t = static_cast<float>(idx) / static_cast<float>(size - 1);
